@@ -1,13 +1,12 @@
 bodyStyle = document.body.style
 
-
 stage.enableMouseOver()
 createjs.Ticker.setFPS(60)
 createjs.Ticker.addEventListener "tick", stage
 
-
 totalWidth  = stage.canvas.width
 totalHeight = stage.canvas.height
+
 
 class Container
   constructor: (name = '', x = 0, y = 0, parent = stage) ->
@@ -17,7 +16,6 @@ class Container
       name: name
       x: x
       y: y
-
 
     parent.addChild @container
 
@@ -104,21 +102,22 @@ class Field
     stage.canvas.style.background = '#eee'
 
   howMuch: ->
-    @count = parseInt(prompt('Сколько шаров?', @count))
+    @count = parseInt(prompt('Сколько линий?', @count))
 
     while not _.isNumber(@count) or _.isNaN(@count)
-      @count = parseInt(prompt('Нужно только число.. Сколько шаров?', @count))
+      @count = parseInt(prompt('Нужно только число. Сколько линий?', @count))
 
-  restart: ->
+    while @count < 4
+      @count = parseInt(prompt('Не, так не интересно, давай больше. Сколько линий?', @count))
+
+  restart: (replay) ->
     @removeAll()
-    @start()
+    @start replay
 
-  start: ->
-    @howMuch()
+  start: (replay = false) ->
+    if not replay then @howMuch()
 
     @win = false
-    @lines = []
-    @circles = []
 
     @createCirclesBlock()
     @createLinesBlock()
@@ -130,6 +129,11 @@ class Field
 
     @reverseLayers()
 
+    @checkIntersection true
+
+    @circlesBlock.visible = true
+    @linesBlock.visible = true
+
   setListeners: ->
     for val in @circles
       val.on 'pressmove', () =>
@@ -138,10 +142,17 @@ class Field
       val.on 'pressup', () =>
         @checkIntersection()
 
-  createCirclesBlock: -> @circlesBlock = new Container('circles')
-  createLinesBlock  : -> @linesBlock   = new Container('lines')
+  createCirclesBlock: ->
+    @circlesBlock = new Container('circles')
+    @circlesBlock.visible = false
+
+  createLinesBlock  : ->
+    @linesBlock   = new Container('lines')
+    @linesBlock.visible = false
 
   drawCircles: ->
+    @circles = []
+
     radius = 30
     for i in [0 ... @count]
       circle = new Circle _.random(radius, totalWidth - radius * 2), _.random(radius, totalHeight - radius * 2), radius, '#00bfff', @circlesBlock, i
@@ -149,15 +160,18 @@ class Field
 
   drawLines: ->
     @clearContainer @linesBlock
+    @lines = []
 
     for val, key in @circles
-      if not @circles[key + 1]?
+      next = key + 1
+      if not @circles[next]?
         line = new Line val, @circles[0], 5, '#ff4000', @linesBlock
       else
-        line = new Line val, @circles[key + 1], 5, '#ff4000', @linesBlock
+        line = new Line val, @circles[next], 5, '#ff4000', @linesBlock
+
       @lines.push line
 
-  checkIntersection: ->
+  checkIntersection: (isFirst = false) ->
     res = []
     for q in [0 ... @circles.length]
       w = q + 1
@@ -187,23 +201,18 @@ class Field
               ((p1.y>=y)and(p2.y<=y)and(p3.y>=y)and(p4.y<=y))
             )
 
-
     if res.every( (val) -> !val)
-      @openWinWidow()
+      @openWinWidow isFirst
 
-  openWinWidow: =>
+  openWinWidow: (replay) ->
     return if @win
     @win = true
 
-    alert('Поздравляем!')
-    @restart()
+    if not replay then alert('Поздравляем!')
+    @restart replay
 
-  reverseLayers: ->
-    stage.children.reverse()
-
+  reverseLayers :             -> stage.children.reverse() # TODO
   clearContainer: (container) -> container.removeAllChildren()
-
-  removeAll: ->
-    stage.removeAllChildren()
+  removeAll     :             -> stage.removeAllChildren()
 
 new Field()
