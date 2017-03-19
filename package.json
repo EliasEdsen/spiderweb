@@ -1,7 +1,7 @@
 {
   "name": "Spiderweb",
   "description": "Just easy game",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "webpack.config.js",
   "scripts": {
     "start": "cross-env NODE_ENV=dev webpack-dev-server --open --inline",
@@ -19,9 +19,7 @@
     "url": "https://github.com/EliasLumberg/spiderweb/issues"
   },
   "homepage": "https://github.com/EliasLumberg/spiderweb#readme",
-  "dependencies": {
-    "underscore": "^1.8.3"
-  },
+  "dependencies": {},
   "devDependencies": {
     "autoprefixer": "^6.6.1",
     "autoprefixer-loader": "^3.2.0",
@@ -47,6 +45,7 @@
     "style-loader": "^0.13.1",
     "stylus": "^0.54.5",
     "stylus-loader": "^2.4.0",
+    "underscore": "^1.8.3",
     "url-loader": "^0.5.7",
     "webpack": "^2.1.0-beta.25",
     "webpack-dev-server": "^2.1.0-beta.9"

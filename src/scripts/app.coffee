@@ -96,6 +96,7 @@ class Circle extends Draw
 
 class Field
   constructor: ->
+    @count = 7
     @setBackground()
     @start()
 
@@ -103,19 +104,17 @@ class Field
     stage.canvas.style.background = '#eee'
 
   howMuch: ->
-    count = parseInt(prompt('Сколько шаров?', 7))
+    @count = parseInt(prompt('Сколько шаров?', @count))
 
-    while not _.isNumber(count) or _.isNaN(count)
-      count = parseInt(prompt('Нужно только число.. Сколько шаров?', 7))
-
-    count
+    while not _.isNumber(@count) or _.isNaN(@count)
+      @count = parseInt(prompt('Нужно только число.. Сколько шаров?', @count))
 
   restart: ->
     @removeAll()
     @start()
 
   start: ->
-    count = @howMuch()
+    @howMuch()
 
     @win = false
     @lines = []
@@ -124,7 +123,7 @@ class Field
     @createCirclesBlock()
     @createLinesBlock()
 
-    @drawCircles count
+    @drawCircles()
     @drawLines()
 
     @setListeners()
@@ -135,14 +134,16 @@ class Field
     for val in @circles
       val.on 'pressmove', () =>
         @drawLines()
+
+      val.on 'pressup', () =>
         @checkIntersection()
 
   createCirclesBlock: -> @circlesBlock = new Container('circles')
   createLinesBlock  : -> @linesBlock   = new Container('lines')
 
-  drawCircles: (count) ->
+  drawCircles: ->
     radius = 30
-    for i in [0 ... count]
+    for i in [0 ... @count]
       circle = new Circle _.random(radius, totalWidth - radius * 2), _.random(radius, totalHeight - radius * 2), radius, '#00bfff', @circlesBlock, i
       @circles.push circle
 
@@ -194,10 +195,8 @@ class Field
     return if @win
     @win = true
 
-    setTimeout () =>
-      alert('Поздравляем!')
-      @restart()
-    , 500
+    alert('Поздравляем!')
+    @restart()
 
   reverseLayers: ->
     stage.children.reverse()
