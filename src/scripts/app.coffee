@@ -140,9 +140,10 @@ new class Field
     for val in @circles
       val.on 'pressmove', () =>
         @drawLines()
+        @checkIntersection()
 
       val.on 'pressup', () =>
-        @checkIntersection()
+        @checkIntersection false, true
 
   createCirclesBlock: ->
     @circlesBlock = new Container('circles')
@@ -155,7 +156,6 @@ new class Field
   getProportion: ->
     maxRadius = 25
     minRadius = 13
-
     rp = (maxRadius - minRadius) / 70
     if @count >= 70 then @radius = minRadius
     else if @count <= 10 then @radius = maxRadius
@@ -182,13 +182,15 @@ new class Field
     for val, key in @circles
       next = key + 1
       if not @circles[next]?
-        line = new Line val, @circles[0], @strokeWidth, '#ff4000', @linesBlock
+        line = new Line val, @circles[0], @strokeWidth, '#bfff00', @linesBlock
+        val.line = line
       else
-        line = new Line val, @circles[next], @strokeWidth, '#ff4000', @linesBlock
+        line = new Line val, @circles[next], @strokeWidth, '#bfff00', @linesBlock
+        val.line = line
 
       @lines.push line
 
-  checkIntersection: (isFirst = false) ->
+  checkIntersection: (isFirst = false, finish = false) ->
     res = []
     for q in [0 ... @circles.length]
       w = q + 1
@@ -204,10 +206,10 @@ new class Field
             p3 = {x: @circles[e].x / 100, y: (totalHeight - @circles[e].y) / 100 }
             p4 = {x: @circles[r].x / 100, y: (totalHeight - @circles[r].y) / 100 }
 
-            x = ((p1.x*p2.y-p2.x*p1.y)*(p4.x-p3.x)-(p3.x*p4.y-p4.x*p3.y)*(p2.x-p1.x))/((p1.y-p2.y)*(p4.x-p3.x)-(p3.y-p4.y)*(p2.x-p1.x));
-            y = ((p3.y-p4.y)*x-(p3.x*p4.y-p4.x*p3.y))/(p4.x-p3.x);
+            x = ((p1.x*p2.y-p2.x*p1.y)*(p4.x-p3.x)-(p3.x*p4.y-p4.x*p3.y)*(p2.x-p1.x))/((p1.y-p2.y)*(p4.x-p3.x)-(p3.y-p4.y)*(p2.x-p1.x))
+            y = ((p3.y-p4.y)*x-(p3.x*p4.y-p4.x*p3.y))/(p4.x-p3.x)
 
-            res.push(
+            check =
               ((p1.x<=x)and(p2.x>=x)and(p3.x<=x)and(p4.x>=x)) or
               ((p1.y<=y)and(p2.y>=y)and(p3.y<=y)and(p4.y>=y)) or
               ((p1.x<=x)and(p2.x>=x)and(p3.x>=x)and(p4.x<=x)) or
@@ -216,10 +218,17 @@ new class Field
               ((p1.y>=y)and(p2.y<=y)and(p3.y<=y)and(p4.y>=y)) or
               ((p1.x>=x)and(p2.x<=x)and(p3.x>=x)and(p4.x<=x)) or
               ((p1.y>=y)and(p2.y<=y)and(p3.y>=y)and(p4.y<=y))
-            )
 
-    if res.every( (val) -> !val)
-      @openWinWidow isFirst
+            if check
+              @circles[q].line.graphics._stroke.style = '#ff0040'
+              @circles[e].line.graphics._stroke.style = '#ff0040'
+
+
+            if finish then res.push check
+
+    if finish
+      if res.every( (val) -> !val)
+        @openWinWidow isFirst
 
   openWinWidow: (replay) ->
     return if @win
