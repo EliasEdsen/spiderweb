@@ -94,15 +94,34 @@ class Circle extends Draw
 
 new class Field
   constructor: ->
+    document.getElementsByTagName('button')[0].addEventListener "click", () => @resetWins()
+
     @count = 7
+
+    if not localStorage.getItem('wins')?  then localStorage.setItem('wins', 0)
+    if not localStorage.getItem('count')? then localStorage.setItem('count', @count)
+
+    @updateWinsView()
+
     @setBackground()
     @start()
+
+  resetWins: ->
+    localStorage.removeItem('wins')
+    localStorage.setItem('wins', 0)
+    @updateWinsView()
+
+  updateWinsView: ->
+    document.getElementsByClassName('Wins')[0].innerText = localStorage.getItem('wins')
 
   setBackground: ->
     stage.canvas.style.background = '#eee'
 
-  howMuch: ->
-    @count = parseInt(prompt('Сколько линий?', @count))
+  howMuch: (win) ->
+    @count = localStorage.getItem('count')
+
+    if win then t = 'Поздравляем! ' else t = ''
+    @count = parseInt(prompt("#{t}Сколько линий?", @count))
 
     while not _.isNumber(@count) or _.isNaN(@count)
       @count = parseInt(prompt('Нужно только число. Сколько линий?', @count))
@@ -110,16 +129,17 @@ new class Field
     while @count < 4
       @count = parseInt(prompt('Не, так не интересно, давай больше. Сколько линий?', 4))
 
-  restart: (replay) ->
+    localStorage.setItem('count', @count)
+
+  restart: (recreate, win) ->
     @removeAll()
-    @start replay
+    @start recreate, win
 
-  start: (replay = false) ->
-    if not replay
-      @howMuch()
+  start: (recreate, win) ->
+    if not recreate
+      @howMuch win
       @proportion = @getProportion()
-
-    @win = false
+      @win = false
 
     @createCirclesBlock()
     @createLinesBlock()
@@ -190,7 +210,7 @@ new class Field
 
       @lines.push line
 
-  checkIntersection: (isFirst = false, finish = false) ->
+  checkIntersection: (isFirst, finish) ->
     res = []
     for q in [0 ... @circles.length]
       w = q + 1
@@ -224,18 +244,19 @@ new class Field
               @circles[e].line.graphics._stroke.style = '#ff0040'
 
 
-            if finish then res.push check
+            if finish or isFirst then res.push check
+
+    if isFirst
+      if res.every( (val) -> !val)
+        @restart isFirst, finish
 
     if finish
       if res.every( (val) -> !val)
-        @openWinWidow isFirst
-
-  openWinWidow: (replay) ->
-    return if @win
-    @win = true
-
-    if not replay then alert('Поздравляем!')
-    @restart replay
+        return if @win
+        @win = true
+        localStorage.setItem('wins', Number(localStorage.getItem('wins')) + 1)
+        @updateWinsView()
+        @restart false, true
 
   reverseLayers :             -> stage.children.reverse() # TODO
   clearContainer: (container) -> container.removeAllChildren()
