@@ -1,7 +1,7 @@
 {
   "name": "Spiderweb",
   "description": "Just easy game",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "webpack.config.js",
   "scripts": {
     "start": "cross-env NODE_ENV=dev webpack-dev-server --open --inline",

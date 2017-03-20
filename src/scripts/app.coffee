@@ -92,7 +92,7 @@ class Circle extends Draw
 
 
 
-class Field
+new class Field
   constructor: ->
     @count = 7
     @setBackground()
@@ -108,14 +108,16 @@ class Field
       @count = parseInt(prompt('Нужно только число. Сколько линий?', @count))
 
     while @count < 4
-      @count = parseInt(prompt('Не, так не интересно, давай больше. Сколько линий?', @count))
+      @count = parseInt(prompt('Не, так не интересно, давай больше. Сколько линий?', 4))
 
   restart: (replay) ->
     @removeAll()
     @start replay
 
   start: (replay = false) ->
-    if not replay then @howMuch()
+    if not replay
+      @howMuch()
+      @proportion = @getProportion()
 
     @win = false
 
@@ -146,16 +148,31 @@ class Field
     @circlesBlock = new Container('circles')
     @circlesBlock.visible = false
 
-  createLinesBlock  : ->
-    @linesBlock   = new Container('lines')
+  createLinesBlock: ->
+    @linesBlock = new Container('lines')
     @linesBlock.visible = false
+
+  getProportion: ->
+    maxRadius = 25
+    minRadius = 13
+
+    rp = (maxRadius - minRadius) / 70
+    if @count >= 70 then @radius = minRadius
+    else if @count <= 10 then @radius = maxRadius
+    else @radius = maxRadius - ((@count - minRadius) * rp)
+
+    maxStrokeWidth = 5
+    minStrokeWidth = 2
+    lp = (maxStrokeWidth - minStrokeWidth) / 70
+    if @count >= 70 then @strokeWidth = minStrokeWidth
+    else if @count <= 10 then @strokeWidth = maxStrokeWidth
+    else @strokeWidth = maxStrokeWidth - ((@count - minStrokeWidth) * lp)
 
   drawCircles: ->
     @circles = []
 
-    radius = 30
     for i in [0 ... @count]
-      circle = new Circle _.random(radius, totalWidth - radius * 2), _.random(radius, totalHeight - radius * 2), radius, '#00bfff', @circlesBlock, i
+      circle = new Circle _.random(@radius, totalWidth - @radius * 2), _.random(@radius, totalHeight - @radius * 2), @radius, '#00bfff', @circlesBlock, i
       @circles.push circle
 
   drawLines: ->
@@ -165,9 +182,9 @@ class Field
     for val, key in @circles
       next = key + 1
       if not @circles[next]?
-        line = new Line val, @circles[0], 5, '#ff4000', @linesBlock
+        line = new Line val, @circles[0], @strokeWidth, '#ff4000', @linesBlock
       else
-        line = new Line val, @circles[next], 5, '#ff4000', @linesBlock
+        line = new Line val, @circles[next], @strokeWidth, '#ff4000', @linesBlock
 
       @lines.push line
 
@@ -214,5 +231,3 @@ class Field
   reverseLayers :             -> stage.children.reverse() # TODO
   clearContainer: (container) -> container.removeAllChildren()
   removeAll     :             -> stage.removeAllChildren()
-
-new Field()
