@@ -3,4 +3,8 @@ require '../styles/index.styl'
 global._     = require "underscore"
 global.stage = new createjs.Stage "canvas"
 
-require './app.coffee'
+stage.enableMouseOver()
+createjs.Ticker.setFPS(60)
+createjs.Ticker.addEventListener "tick", stage
+
+require './field.coffee'
